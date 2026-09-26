@@ -1,0 +1,26 @@
+{
+  "name": "expense-tracker",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "build": "npm run build -w frontend && npm run build -w backend",
+    "typecheck": "npm run typecheck -w frontend && npm run typecheck -w backend",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "test:integration": "node tests/integration.mjs",
+    "setup": "node scripts/setup.mjs",
+    "db:init": "npm run db:init -w backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "@types/node": "^24.10.0"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
+}

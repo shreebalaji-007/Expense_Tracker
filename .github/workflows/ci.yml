@@ -1,0 +1,38 @@
+name: Daybook checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Create isolated development configuration
+        run: npm run setup
+      - name: Start full stack
+        run: docker compose up --build -d
+      - name: Wait for application
+        run: |
+          for i in $(seq 1 120); do
+            if curl --fail --silent http://localhost:8080/api/health; then exit 0; fi
+            sleep 5
+          done
+          docker compose logs --tail=100
+          exit 1
+      - run: npm run test:integration
+      - name: Container logs on failure
+        if: failure()
+        run: docker compose logs --tail=100
+      - name: Stop isolated CI containers
+        if: always()
+        run: docker compose down
